@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,user-scalable=no"/>
+<meta name="theme-color" content="#0d0d14"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="DS Quiz"/>
+<title>DS Quiz</title>
+<link rel="manifest" id="mflink" href="#"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%230d0d14'/%3E%3Ctext x='256' y='355' font-size='300' text-anchor='middle' fill='%2360a5fa'%3E%E2%88%91%3C/text%3E%3C/svg%3E"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0d0d14;--s1:#13141f;--s2:#1a1b28;--bd:#252636;
+  --tx:#e8e8f4;--mu:#6b7280;--ac:#60a5fa;
+  --gr:#4ade80;--rd:#f87171;--yl:#fbbf24;--pu:#a78bfa;
+}
+body{background:var(--bg);color:var(--tx);font-family:'JetBrains Mono',monospace;min-height:100dvh;overflow-x:hidden}
+#root{max-width:480px;margin:0 auto;padding:env(safe-area-inset-top,16px) 18px env(safe-area-inset-bottom,28px);min-height:100dvh;display:flex;flex-direction:column}
+
+.tabs{display:flex;gap:2px;background:var(--s1);border-radius:12px;padding:3px;margin-bottom:20px}
+.tab{flex:1;padding:9px 6px;text-align:center;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;border-radius:9px;cursor:pointer;color:var(--mu);transition:all .2s;border:none;background:none;font-family:inherit}
+.tab.active{background:var(--ac);color:#000;font-weight:600}
+
+.hdr{padding-top:18px;margin-bottom:22px}
+.hdr-lbl{font-size:10px;letter-spacing:3px;color:var(--mu);text-transform:uppercase;margin-bottom:3px}
+.hdr-date{font-size:11px;color:#3a3a4a}
+.spacer{flex:1}
+
+.prog-wrap{display:flex;gap:4px;margin-bottom:5px}
+.prog-dot{flex:1;height:3px;border-radius:2px;background:var(--s2);transition:background .3s}
+.prog-dot.done{background:var(--gr)}.prog-dot.active{background:var(--ac)}
+.prog-lbl{font-size:10px;color:var(--mu);margin-bottom:18px}
+
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:22px 18px;animation:fu .3s ease both}
+@keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+.badge{display:inline-block;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;border-radius:20px;padding:3px 9px;margin-bottom:14px;border:1px solid}
+.q-text{font-family:'DM Serif Display',serif;font-size:19px;line-height:1.55}
+
+.ans-card{background:#0b1d0e;border:1px solid #183020;border-radius:13px;padding:16px 17px;color:#bbf7d0;font-size:13px;line-height:1.75;animation:fu .3s ease both}
+.ans-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gr);margin-bottom:7px}
+.hint-card{background:#18120a;border:1px solid #3a2600;border-radius:13px;padding:14px 17px;color:#fde68a;font-size:13px;line-height:1.7;animation:fu .3s ease both}
+.hint-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--yl);margin-bottom:6px}
+.ai-card{background:#09101c;border:1px solid #182540;border-radius:13px;padding:15px 17px;color:#93c5fd;font-size:13px;line-height:1.75;animation:fu .3s ease both}
+.ai-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ac);margin-bottom:6px}
+
+.row{display:flex;gap:8px;animation:fu .35s ease both}
+.btn{flex:1;border:none;border-radius:11px;padding:14px 10px;font-family:'JetBrains Mono',monospace;font-size:12px;cursor:pointer;transition:opacity .15s,transform .1s;-webkit-appearance:none}
+.btn:active{transform:scale(0.97);opacity:.85}
+.btn-p{background:var(--ac);color:#000;font-weight:700}
+.btn-g{background:var(--s2);color:var(--mu);border:1px solid var(--bd)}
+.btn-gr{background:#0b1f0e;color:var(--gr);border:1px solid #183a1a}
+.btn-rd{background:#1f0b0b;color:var(--rd);border:1px solid #3a1818}
+.btn-pu{background:#150b2a;color:var(--pu);border:1px solid #2a1560}
+
+.splash{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;animation:fu .5s ease both}
+.splash-icon{font-size:68px;margin-bottom:18px}
+.splash-title{font-family:'DM Serif Display',serif;font-size:26px;margin-bottom:8px}
+.splash-sub{color:var(--mu);font-size:12px;margin-bottom:36px;line-height:1.65}
+.btn-start{background:var(--ac);color:#000;font-weight:700;font-family:'JetBrains Mono',monospace;font-size:14px;border:none;border-radius:13px;padding:17px 44px;cursor:pointer}
+.streak-badge{margin-top:18px;background:var(--s1);border:1px solid var(--bd);border-radius:20px;padding:7px 16px;font-size:11px;color:var(--yl)}
+
+.done{display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:32px;animation:fu .5s ease both}
+.done-emoji{font-size:58px;margin-bottom:14px}
+.done-score{font-family:'DM Serif Display',serif;font-size:34px;margin-bottom:6px}
+.done-sub{color:var(--mu);font-size:12px;margin-bottom:28px;line-height:1.6}
+.rlist{width:100%;display:flex;flex-direction:column;gap:7px}
+.ritem{display:flex;align-items:center;gap:9px;background:var(--s1);border-radius:9px;padding:11px 13px;text-align:left;border-left:3px solid}
+.ritem.k{border-color:var(--gr)}.ritem.d{border-color:var(--rd)}
+.ricon{font-size:14px;min-width:18px}
+.rq{font-size:11px;color:#aaa;flex:1;line-height:1.5}
+.rt{font-size:9px;white-space:nowrap}
+.done-foot{margin-top:20px;font-size:11px;color:#333}
+
+.formula-section{margin-bottom:22px}
+.fs-title{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--bd)}
+.formula-grid{display:flex;flex-direction:column;gap:6px}
+.formula-card{background:var(--s1);border:1px solid var(--bd);border-radius:11px;padding:13px 15px;cursor:pointer;transition:border-color .2s}
+.formula-card:active{border-color:var(--ac)}
+.fc-name{font-size:12px;color:var(--tx);margin-bottom:4px;font-weight:600}
+.fc-formula{font-family:'DM Serif Display',serif;font-size:15px;color:var(--ac);line-height:1.5;margin-bottom:4px}
+.fc-desc{font-size:11px;color:var(--mu);line-height:1.5}
+
+.draw-page{display:flex;flex-direction:column;flex:1;animation:fu .3s ease both}
+.draw-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.draw-title{font-family:'DM Serif Display',serif;font-size:17px;text-align:center;flex:1}
+.draw-prompt{font-size:14px;color:var(--ac);text-align:center;margin-bottom:6px;line-height:1.5}
+.draw-desc{font-size:11px;color:var(--mu);text-align:center;margin-bottom:14px}
+.draw-canvas-wrap{background:var(--s1);border-radius:16px;border:1px solid var(--bd);overflow:hidden;position:relative;height:260px}
+canvas#dc{width:100%;height:100%;touch-action:none;cursor:crosshair;display:block}
+.draw-result{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-top:10px;font-size:13px;line-height:1.65;min-height:56px;animation:fu .3s ease both}
+.dr-correct{color:var(--gr);border-color:#4ade8044}
+.dr-wrong{color:var(--rd);border-color:#f8717144}
+.dr-loading{color:var(--mu);font-style:italic}
+.draw-tools{display:flex;gap:8px;margin-top:12px}
+
+.search-wrap{position:relative;margin-bottom:16px}
+.search-wrap input{width:100%;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:11px 14px 11px 38px;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none}
+.search-wrap input::placeholder{color:var(--mu)}
+.search-wrap input:focus{border-color:var(--ac)}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--mu);font-size:15px;pointer-events:none}
+
+.pen-size-wrap{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px 14px;background:var(--s1);border:1px solid var(--bd);border-radius:10px}
+.pen-size-wrap label{font-size:10px;color:var(--mu);letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.pen-size-wrap input[type=range]{flex:1}
+.color-btns{display:flex;gap:6px}
+.color-btn{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .15s}
+.color-btn.sel{border-color:#fff;transform:scale(1.2)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+// ================================================================
+// DATA
+// ================================================================
+const TC={
+  "Mengenlehre":"#4ade80","Relationen":"#60a5fa","Funktionen":"#f472b6",
+  "Gruppentheorie":"#fb923c","Boolesche Algebra":"#a78bfa","Graphentheorie":"#34d399",
+  "Aussagenlogik":"#fbbf24","Prädikatenlogik":"#f87171","Kombinatorik":"#38bdf8",
+  "Automatentheorie":"#e879f9","Zahlentheorie":"#48dbfb"
+};
+
+const QD={
+  "Mengenlehre":[
+    {q:"Was ist die Potenzmenge von {a,b}?",a:"{ {}, {a}, {b}, {a,b} } — 2²=4 Elemente.",hint:"2ⁿ Elemente für n-Menge."},
+    {q:"Wie viele Elemente hat 𝒫(∅)?",a:"1 Element: {∅} — denn 2⁰=1.",hint:"Leere Menge hat 0 Elemente."},
+    {q:"Unterschied ⊆ und ⊂?",a:"⊆ erlaubt Gleichheit; ⊂ fordert A≠B (echte Teilmenge).",hint:"Wie ≤ vs <."},
+    {q:"Was ist Ā (Komplement bzgl. U)?",a:"Ā = U \\ A — alle Elemente in U nicht in A. Ā∪A=U, Ā∩A=∅.",hint:"Denk: alles was nicht in A ist."},
+    {q:"De Morgan für Mengen?",a:"̄(A∪B)=Ā∩B̄ und ̄(A∩B)=Ā∪B̄",hint:"Komplement kehrt ∪ und ∩ um."},
+    {q:"Was ist A×B und wie groß ist es?",a:"A×B={(a,b)|a∈A,b∈B}. Größe: |A×B|=|A|·|B|.",hint:"Reihenfolge zählt."},
+    {q:"Was gilt für |𝒫(A)| wenn |A|=n?",a:"|𝒫(A)|=2ⁿ",hint:"Jedes Element: drin oder nicht."},
+  ],
+  "Relationen":[
+    {q:"Wann ist R antisymmetrisch?",a:"(a,b)∈R ∧ (b,a)∈R ⟹ a=b",hint:"Nicht dasselbe wie asymmetrisch!"},
+    {q:"Antisymmetrisch vs. asymmetrisch?",a:"Asymm.: (a,b)∈R⟹(b,a)∉R (schließt Reflexivität aus). Antisymm.: beide Richtungen ok, aber dann a=b.",hint:"Asymmetrisch ist stärker."},
+    {q:"Drei Eigenschaften einer Äquivalenzrelation?",a:"Reflexivität (aRa), Symmetrie (aRb⟹bRa), Transitivität (aRb∧bRc⟹aRc).",hint:"Gleichheit ist das Urbeispiel."},
+    {q:"Was ist eine totale Ordnung?",a:"Partielle Ordnung bei der ∀a,b: aRb∨bRa gilt.",hint:"≤ auf ℝ ist ein Beispiel."},
+    {q:"Was sind Äquivalenzklassen?",a:"[a]={b∈A|aRb} — disjunkte Teilmengen die A vollständig überdecken (Partition).",hint:"Paarweise disjunkt und vollständig."},
+    {q:"Was ist eine partielle Ordnung?",a:"Reflexiv, antisymmetrisch, transitiv. Nicht alle Elemente müssen vergleichbar sein.",hint:"Beispiel: ⊆ auf 𝒫(M)"},
+  ],
+  "Funktionen":[
+    {q:"Injektiv, surjektiv, bijektiv?",a:"Injektiv: versch. Inputs→versch. Outputs. Surjektiv: jeder Output erreichbar. Bijektiv: beides.",hint:"Bijektiv ⟺ invertierbar."},
+    {q:"Wann ist f: A→B surjektiv?",a:"f(A)=B — ∀b∈B ∃a∈A: f(a)=b.",hint:"Kein b bleibt übrig."},
+    {q:"Was ist f∘g?",a:"(f∘g)(x)=f(g(x)) — erst g, dann f.",hint:"Von rechts nach links."},
+    {q:"Wann hat f eine Inverse?",a:"Genau dann wenn f bijektiv ist.",hint:"f⁻¹∘f=id und f∘f⁻¹=id."},
+  ],
+  "Gruppentheorie":[
+    {q:"Die vier Gruppenaxiome?",a:"Abgeschlossenheit, Assoziativität, Neutralelement, Inverses.",hint:"AANI"},
+    {q:"Was ist eine abelsche Gruppe?",a:"Gruppe mit Kommutativität: a∗b=b∗a für alle a,b.",hint:"Beispiel: (ℤ,+)"},
+    {q:"Was ist ein Homomorphismus?",a:"f:G→H mit f(a∗b)=f(a)∘f(b) — strukturerhaltend.",hint:"Isomorphismus=bijektiver Homomorphismus."},
+    {q:"Satz von Lagrange?",a:"Für endliche Gruppen: |H| teilt |G| für jede Untergruppe H≤G.",hint:"|G|/|H|=[G:H] (Index)."},
+    {q:"Was ist ker(f) eines Homomorphismus?",a:"ker(f)={g∈G|f(g)=eₕ} — Normalteiler von G. ker(f)={e} ⟺ f injektiv.",hint:"Kern ist stets eine Untergruppe."},
+  ],
+  "Boolesche Algebra":[
+    {q:"De Morgan in Bool. Algebra?",a:"¬(a∧b)=¬a∨¬b und ¬(a∨b)=¬a∧¬b",hint:"Komplement tauscht ∧ und ∨."},
+    {q:"Absorptionsgesetz?",a:"a∨(a∧b)=a und a∧(a∨b)=a",hint:"Das Größere absorbiert das Kleinere."},
+    {q:"Was ist DNF?",a:"Disjunktion von Konjunktionstermen: (x∧y)∨(¬x∧z)∨...",hint:"OR von ANDs."},
+    {q:"Was ist KNF?",a:"Konjunktion von Disjunktionstermen: (x∨y)∧(¬x∨z)∧...",hint:"AND von ORs."},
+    {q:"Distributivgesetze Bool. Algebra?",a:"a∧(b∨c)=(a∧b)∨(a∧c) und a∨(b∧c)=(a∨b)∧(a∨c)",hint:"Wie Mult. und Addition."},
+    {q:"Was ist das Dualitätsprinzip?",a:"Jede wahre Aussage bleibt wahr wenn man ∧↔∨ und 0↔1 tauscht.",hint:"DNF und KNF sind dual."},
+  ],
+  "Graphentheorie":[
+    {q:"Was ist ein Euler-Kreis?",a:"Geschlossener Weg der jede Kante genau einmal durchläuft. Existiert ⟺ zusammenhängend und alle Knoten geraden Grad.",hint:"Königsberger Brückenproblem!"},
+    {q:"Was ist ein Hamilton-Kreis?",a:"Kreis der jeden Knoten genau einmal besucht. Kein einfaches Kriterium (NP-vollständig).",hint:"Euler=Kanten, Hamilton=Knoten."},
+    {q:"Was ist ein planarer Graph?",a:"Ohne Kantenkreuzungen in der Ebene zeichenbar. K₅ und K₃,₃ sind nicht planar.",hint:"Satz von Kuratowski."},
+    {q:"Handshaking-Lemma?",a:"Σ deg(v)=2|E| — Summe aller Knotengrade = doppelte Kantenanzahl.",hint:"Jede Kante trägt zu 2 Knoten bei."},
+    {q:"Eulersche Polyederformel?",a:"V−E+F=2 für zusammenhängende planare Graphen.",hint:"Würfel: 8−12+6=2 ✓"},
+    {q:"Was ist ein bipartiter Graph?",a:"Knoten teilbar in V₁,V₂ sodass alle Kanten zwischen V₁ und V₂ laufen. ⟺ Kein ungerader Kreis.",hint:"Beispiel: K₃,₃"},
+  ],
+  "Aussagenlogik":[
+    {q:"Was ist eine Tautologie?",a:"Formel die unter jeder Belegung wahr ist. Beispiel: p∨¬p.",hint:"Gegenteil: Kontradiktion."},
+    {q:"Modus Ponens?",a:"Aus p und p→q folgt q. Notation: {p,p→q} ⊢ q.",hint:"Grundlegendste Schlussregel."},
+    {q:"Resolution in Aussagenlogik?",a:"Aus (A∨p) und (B∨¬p) folgt (A∨B). Widerlegungsvollständig für KNF.",hint:"Basis automatischen Beweisens."},
+    {q:"Was bedeutet ⊨ vs ⊢?",a:"⊨ = semantische Folgerung (wahr unter allen Modellen). ⊢ = syntaktische Ableitbarkeit.",hint:"Vollständigkeit: ⊨⟹⊢. Korrektheit: ⊢⟹⊨."},
+    {q:"Was ist eine Horn-Klausel?",a:"Klausel mit höchstens einem positiven Literal: ¬A∨¬B∨C (entspricht A∧B→C).",hint:"Basis der Prolog-Programmierung."},
+    {q:"Was ist Kontraposition?",a:"(p→q) ⟺ (¬q→¬p)",hint:"Implikation äquivalent zur Kontraposition."},
+  ],
+  "Prädikatenlogik":[
+    {q:"∀ vs ∃?",a:"∀x P(x): P gilt für alle x. ∃x P(x): mindestens ein x mit P(x).",hint:"¬∀x P(x) ⟺ ∃x ¬P(x)"},
+    {q:"Was ist Pränexnormalform (PNF)?",a:"Alle Quantoren am Anfang: Q₁x₁...Qₙxₙ.F wobei F quantorenfrei.",hint:"Jede PL1-Formel hat äquivalente PNF."},
+    {q:"Was ist Skolemisierung?",a:"Existenzquantoren werden durch Skolem-Funktionen (abhängig von ∀-Variablen) ersetzt.",hint:"Schritt zur Herbrand-Theorie."},
+    {q:"Was ist Herbrand-Universum?",a:"Menge aller Grundterme aus Funktions- und Konstantensymbolen der Formel.",hint:"Basis für Herbrand-Modelle."},
+    {q:"Satz von Gödel (Vollständigkeit PL1)?",a:"Jede allgemeingültige PL1-Formel ist ableitbar — PL1 ist vollständig.",hint:"Gilt nicht für PL2!"},
+  ],
+  "Kombinatorik":[
+    {q:"Inklusion-Exklusion für |A∪B|?",a:"|A∪B|=|A|+|B|−|A∩B|",hint:"Schnitt doppelt gezählt, daher abziehen."},
+    {q:"Inklusion-Exklusion für |A∪B∪C|?",a:"|A∪B∪C|=|A|+|B|+|C|−|A∩B|−|A∩C|−|B∩C|+|A∩B∩C|",hint:"Alternierend addieren/subtrahieren."},
+    {q:"Permutation vs. Kombination?",a:"Permutation: Reihenfolge wichtig — n!/(n−k)!. Kombination: Reihenfolge egal — n!/(k!·(n−k)!).",hint:"C(n,k)='n über k'"},
+    {q:"Was ist Kardinalität?",a:"Mächtigkeit einer Menge. |ℕ|=ℵ₀ (abzählbar), |ℝ|>ℵ₀ (überabzählbar).",hint:"Gleichmächtig ⟺ Bijektion existiert."},
+    {q:"Cantors Diagonalargument?",a:"Annahme: ℝ abzählbar. Konstruiere Zahl die sich von der n-ten Zahl in der n-ten Stelle unterscheidet → Widerspruch.",hint:"Die Diagonale wird geändert."},
+    {q:"Schubfachprinzip (Pigeonhole)?",a:"n+1 Objekte auf n Fächer ⟹ mindestens ein Fach mit ≥2 Objekten.",hint:"Verallgemeinert: ⌈m/n⌉ Minimum."},
+  ],
+  "Automatentheorie":[
+    {q:"DFA vs NFA?",a:"DFA: genau eine Transition pro Zustand/Symbol. NFA: mehrere/keine möglich, auch λ.",hint:"Beide akzeptieren reguläre Sprachen."},
+    {q:"λ-NFA → DFA?",a:"1. λ-Abschluss aller Zustände. 2. Potenzmengenkonstruktion auf λ-Abschlüssen.",hint:"Endzustände = Teilmengen mit NFA-Endzustand."},
+    {q:"Pumping-Lemma regulär?",a:"∃p ∀w∈L,|w|≥p: w=xyz, |y|≥1, |xy|≤p, ∀i≥0: xy^iz∈L.",hint:"Zum Beweis der Nicht-Regularität."},
+    {q:"Chomsky-Hierarchie?",a:"Typ 0 (RE) ⊃ Typ 1 (Kontext-sensit.) ⊃ Typ 2 (Kontext-frei) ⊃ Typ 3 (Regulär).",hint:"Typ 3=DFA, Typ 2=Kellerautomat."},
+    {q:"Myhill-Nerode?",a:"L regulär ⟺ ≡_L hat endlich viele Klassen.",hint:"Basis für DFA-Minimierung."},
+  ],
+  "Zahlentheorie":[
+    {q:"Was ist ggT(a,b)?",a:"Größter gemeinsamer Teiler. Berechnung: ggT(a,b)=ggT(b, a mod b).",hint:"Euklidischer Algorithmus."},
+    {q:"Chinesischer Restsatz?",a:"Wenn m₁,...,mₖ paarweise teilerfremd, hat x≡aᵢ(mod mᵢ) eindeutige Lösung mod M=∏mᵢ.",hint:"Basis vieler kryptographischer Verfahren."},
+    {q:"Fermats kleiner Satz?",a:"Für Primzahl p und ggT(a,p)=1: aᵖ⁻¹≡1(mod p).",hint:"Basis des Fermat-Primalitätstests."},
+  ],
+};
+const ALL_Q=Object.entries(QD).flatMap(([t,qs])=>qs.map(q=>({...q,topic:t})));
+
+const FD={
+  "Mengenlehre":[
+    {name:"Potenzmenge",formula:"|𝒫(A)| = 2ⁿ",desc:"Anzahl Teilmengen einer n-Menge.",draw:true},
+    {name:"De Morgan",formula:"̄(A∪B) = Ā∩B̄",desc:"Komplement der Vereinigung.",draw:true},
+    {name:"Inkl.-Exkl. (2 Mengen)",formula:"|A∪B| = |A|+|B|−|A∩B|",desc:"Vereinigung ohne Doppelzählung.",draw:true},
+    {name:"Inkl.-Exkl. (3 Mengen)",formula:"|A∪B∪C| = |A|+|B|+|C|−|A∩B|−|A∩C|−|B∩C|+|A∩B∩C|",desc:"Vereinigung dreier Mengen.",draw:true},
+    {name:"Kart. Produkt",formula:"|A×B| = |A|·|B|",desc:"Anzahl geordneter Paare.",draw:true},
+  ],
+  "Kombinatorik":[
+    {name:"Binomialkoeffizient",formula:"C(n,k) = n! / (k!·(n−k)!)",desc:"'n über k' — k-Teilmengen aus n.",draw:true},
+    {name:"Permutation",formula:"P(n,k) = n! / (n−k)!",desc:"Geordnete k-Auswahl aus n.",draw:true},
+    {name:"Schubfachprinzip",formula:"n+1 in n Fächer ⟹ ∃ Fach ≥2",desc:"Pigeonhole Principle.",draw:true},
+  ],
+  "Graphentheorie":[
+    {name:"Handshaking-Lemma",formula:"Σ deg(v) = 2|E|",desc:"Summe Knotengrade = 2 × Kanten.",draw:true},
+    {name:"Euler-Polyeder",formula:"V − E + F = 2",desc:"Ecken − Kanten + Flächen = 2.",draw:true},
+  ],
+  "Gruppentheorie":[
+    {name:"Lagrange",formula:"|G| = |H| · [G:H]",desc:"Gruppenordnung = UG-Ordnung × Index.",draw:true},
+    {name:"Homomorphiesatz",formula:"G/ker(f) ≅ Im(f)",desc:"Quotientengruppe isomorph zum Bild.",draw:true},
+  ],
+  "Boolesche Algebra":[
+    {name:"De Morgan (Bool.)",formula:"¬(a∧b) = ¬a∨¬b",desc:"Negation der Konjunktion.",draw:true},
+    {name:"Distributivität",formula:"a∧(b∨c) = (a∧b)∨(a∧c)",desc:"AND verteilt über OR.",draw:true},
+    {name:"Doppelnegation",formula:"¬¬a = a",desc:"Doppelte Negation hebt sich auf.",draw:true},
+  ],
+  "Aussagenlogik":[
+    {name:"Modus Ponens",formula:"p, p→q ⊢ q",desc:"Grundlegende Schlussregel.",draw:true},
+    {name:"Resolution",formula:"(A∨p)∧(B∨¬p) ⟹ A∨B",desc:"Resolutionsregel für KNF.",draw:true},
+    {name:"Kontraposition",formula:"(p→q) ⟺ (¬q→¬p)",desc:"Implikation äquivalent zur Kontraposition.",draw:true},
+  ],
+  "Prädikatenlogik":[
+    {name:"Quantoren-Negation",formula:"¬∀x P(x) ⟺ ∃x ¬P(x)",desc:"Allquantor-Negation.",draw:true},
+    {name:"Quantoren-Negation 2",formula:"¬∃x P(x) ⟺ ∀x ¬P(x)",desc:"Existenzquantor-Negation.",draw:true},
+  ],
+  "Automatentheorie":[
+    {name:"Pumping (regulär)",formula:"∃p ∀w∈L,|w|≥p: w=xyz, |y|≥1, |xy|≤p, ∀i: xy^iz∈L",desc:"Notwendig für reguläre Sprachen.",draw:true},
+  ],
+  "Zahlentheorie":[
+    {name:"Euklidischer Alg.",formula:"ggT(a,b) = ggT(b, a mod b)",desc:"Rekursive GGT-Berechnung.",draw:true},
+    {name:"Fermats kl. Satz",formula:"aᵖ⁻¹ ≡ 1 (mod p)",desc:"Für Primzahl p, ggT(a,p)=1.",draw:true},
+  ],
+};
+
+// ================================================================
+// HELPERS
+// ================================================================
+function ss(arr,seed){
+  const a=[...arr];let s=seed;
+  for(let i=a.length-1;i>0;i--){s=(s*1664525+1013904223)&0xffffffff;const j=Math.abs(s)%(i+1);[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+function tseed(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
+function getDQ(n=10){return ss(ALL_Q,tseed()).slice(0,n);}
+function dl(){return new Date().toLocaleDateString("de-DE",{weekday:"long",year:"numeric",month:"long",day:"numeric"});}
+function tk(){const d=new Date();return`q_${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`;}
+function gstreak(){try{const s=JSON.parse(localStorage.getItem("streak")||"{}"),t=tk();return s.lastDay===t?(s.count||1):(s.count||0);}catch{return 0;}}
+function ustreak(){
+  try{
+    const s=JSON.parse(localStorage.getItem("streak")||"{}"),t=tk();
+    if(s.lastDay===t)return;
+    const d=new Date();d.setDate(d.getDate()-1);
+    const y=`q_${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`;
+    const n=s.lastDay===y?(s.count||1)+1:1;
+    localStorage.setItem("streak",JSON.stringify({lastDay:t,count:n}));
+  }catch{}
+}
+function wdone(){try{return!!localStorage.getItem("done_"+tk());}catch{return false;}}
+function mdone(){try{localStorage.setItem("done_"+tk(),"1");}catch{};}
+function esc(s){if(!s)return"";return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+// ================================================================
+// STATE
+// ================================================================
+const DAILY=getDQ(10);
+let S={tab:"splash",qi:0,qp:"question",res:[],ait:"",ail:false,df:null,dr:null,dl2:false,fs:""};
+const root=document.getElementById("root");
+function ss2(p){Object.assign(S,p);render();}
+
+// ================================================================
+// API
+// ================================================================
+async function quizAI(q,knew){
+  ss2({ail:true,ait:""});
+  try{
+    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,
+        system:"Du bist Tutor für Diskrete Strukturen (Uni Trier). 2-3 Sätze Feedback auf Deutsch. Wenn gewusst: Lob+Vertiefung. Wenn nicht: ermutigen+anders erklären. Nur Fließtext.",
+        messages:[{role:"user",content:`Frage: ${q.q}\nAntwort: ${q.a}\nThema: ${q.topic}\nGewusst: ${knew?"Ja":"Nein"}`}]})});
+    const d=await r.json();
+    ss2({ail:false,ait:d.content?.find(c=>c.type==="text")?.text||"(Keine Antwort)"});
+  }catch{ss2({ail:false,ait:"(KI nicht verfügbar)"});}
+}
+
+async function checkDraw(f,b64){
+  ss2({dl2:true,dr:null});
+  try{
+    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,
+        messages:[{role:"user",content:[
+          {type:"text",text:`Gesucht: "${f.name}" = ${f.formula} (${f.desc}). Ist die handgezeichnete Formel inhaltlich korrekt? Sei großzügig bei der Handschrifterkennung. Antworte: "RICHTIG" oder "FALSCH" dann 1-2 Sätze Erklärung auf Deutsch.`},
+          {type:"image",source:{type:"base64",media_type:"image/png",data:b64}}
+        ]}]})});
+    const d=await r.json();
+    ss2({dl2:false,dr:d.content?.find(c=>c.type==="text")?.text||"(Keine Antwort)"});
+  }catch{ss2({dl2:false,dr:"(KI nicht verfügbar)"});}
+}
+
+// ================================================================
+// RENDER
+// ================================================================
+function render(){
+  const t=S.tab;
+  if(t==="splash")rSplash();
+  else if(t==="quiz")rQuiz();
+  else if(t==="done")rDone();
+  else if(t==="formulas")rFormulas();
+  else if(t==="draw")rDraw();
+}
+
+function tabs(a){
+  return`<div class="tabs">
+    <button class="tab ${a==="quiz"?"active":""}" onclick="go('quiz')">📝 Quiz</button>
+    <button class="tab ${a==="formulas"?"active":""}" onclick="go('formulas')">∑ Formeln</button>
+  </div>`;
+}
+
+function rSplash(){
+  const streak=gstreak(),done=wdone();
+  root.innerHTML=`
+    <div class="splash">
+      <div class="splash-icon">∑</div>
+      <div class="splash-title">Tägliches Quiz</div>
+      <div class="splash-sub">Diskrete Strukturen &amp; Elementare Logik<br>${dl()}</div>
+      <button class="btn-start" onclick="startQ()">${done?"Nochmal →":"Quiz starten →"}</button>
+      ${streak>0?`<div class="streak-badge">🔥 ${streak} Tag${streak!==1?"e":""} Streak</div>`:""}
+      <div style="margin-top:24px">
+        <button class="btn btn-pu" style="padding:12px 24px" onclick="go('formulas')">∑ Formelsammlung</button>
+      </div>
+    </div>`;
+}
+
+function rQuiz(){
+  const q=DAILY[S.qi];
+  const col=TC[q.topic]||"#60a5fa";
+  const dots=DAILY.map((_,i)=>`<div class="prog-dot ${i<S.qi?"done":i===S.qi?"active":""}"></div>`).join("");
+  let ph="";
+  if(S.qp==="question"){
+    ph=`<div class="row">
+      <button class="btn btn-g" onclick="qHint()">💡 Hinweis</button>
+      <button class="btn btn-p" onclick="qAns()">Antwort zeigen</button>
+    </div>`;
+  } else if(S.qp==="hint"){
+    ph=`<div class="hint-card"><div class="hint-lbl">Hinweis</div>${esc(q.hint)}</div>
+    <div class="row"><button class="btn btn-p" onclick="qAns()">Antwort zeigen</button></div>`;
+  } else if(S.qp==="answer"){
+    ph=`<div class="ans-card"><div class="ans-lbl">Musterantwort</div>${esc(q.a)}</div>
+    <div class="row">
+      <button class="btn btn-rd" onclick="qRes(false)">✗ Nicht gewusst</button>
+      <button class="btn btn-gr" onclick="qRes(true)">✓ Gewusst!</button>
+    </div>`;
+  } else if(S.qp==="feedback"){
+    const ai=S.ail?`<span style="color:var(--mu);font-style:italic">Tutor denkt nach...</span>`:esc(S.ait);
+    ph=`<div class="ans-card"><div class="ans-lbl">Musterantwort</div>${esc(q.a)}</div>
+    <div class="ai-card"><div class="ai-lbl">🤖 Tutor</div>${ai}</div>
+    <div class="row"><button class="btn btn-p" onclick="qNext()">${S.qi+1>=DAILY.length?"Ergebnis →":"Weiter →"}</button></div>`;
+  }
+  root.innerHTML=`
+    <div class="hdr"><div class="hdr-lbl">DS · Quiz</div><div class="hdr-date">${dl()}</div></div>
+    ${tabs("quiz")}
+    <div class="prog-wrap">${dots}</div>
+    <div class="prog-lbl">Frage ${S.qi+1} von ${DAILY.length}</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card">
+        <div class="badge" style="color:${col};border-color:${col}44;background:${col}14">${esc(q.topic)}</div>
+        <div class="q-text">${esc(q.q)}</div>
+      </div>
+      ${ph}
+    </div><div class="spacer"></div>`;
+}
+
+function rDone(){
+  const k=S.res.filter(r=>r==="k").length,n=DAILY.length;
+  const emoji=k>=n*.8?"🏆":k>=n*.5?"📚":"💪";
+  const msg=k===n?"Perfekt! Morgen neue Fragen.":k>=n*.8?"Sehr gut — fast alles drauf!":k>=n*.5?"Gute Arbeit!":"Morgen wieder!";
+  root.innerHTML=`
+    <div class="done">
+      <div class="done-emoji">${emoji}</div>
+      <div class="done-score">${k} / ${n}</div>
+      <div class="done-sub">${msg}</div>
+      <div class="rlist">${DAILY.map((q,i)=>{
+        const ok=S.res[i]==="k",c=TC[q.topic]||"#60a5fa";
+        return`<div class="ritem ${ok?"k":"d"}"><span class="ricon">${ok?"✓":"✗"}</span><span class="rq">${esc(q.q)}</span><span class="rt" style="color:${c}">${esc(q.topic)}</span></div>`;
+      }).join("")}</div>
+      <div class="done-foot">Morgen warten neue Fragen 👋</div>
+      <div style="margin-top:18px;display:flex;gap:8px">
+        <button class="btn btn-pu" onclick="go('formulas')" style="flex:1">∑ Formeln</button>
+        <button class="btn btn-g" onclick="startQ()" style="flex:1">↺ Nochmal</button>
+      </div>
+    </div>`;
+}
+
+function rFormulas(){
+  const q=S.fs.toLowerCase();
+  let html=`
+    <div class="hdr"><div class="hdr-lbl">Formelsammlung</div></div>
+    ${tabs("formulas")}
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Formel suchen..." value="${esc(S.fs)}" oninput="sfSearch(this.value)"/>
+    </div>`;
+  Object.entries(FD).forEach(([topic,fms])=>{
+    const fl=q?fms.filter(f=>f.name.toLowerCase().includes(q)||f.formula.toLowerCase().includes(q)||f.desc.toLowerCase().includes(q)||topic.toLowerCase().includes(q)):fms;
+    if(!fl.length)return;
+    const c=TC[topic]||"#60a5fa";
+    html+=`<div class="formula-section">
+      <div class="fs-title" style="color:${c}">${esc(topic)}</div>
+      <div class="formula-grid">${fl.map(f=>`
+        <div class="formula-card" onclick='openDraw(${JSON.stringify(f)})'>
+          <div class="fc-name">${esc(f.name)}</div>
+          <div class="fc-formula">${esc(f.formula)}</div>
+          <div class="fc-desc">${esc(f.desc)} <span style="color:var(--ac);font-size:10px">✏️ Zeichnen</span></div>
+        </div>`).join("")}</div>
+    </div>`;
+  });
+  root.innerHTML=html;
+}
+
+// ---- DRAW ----
+let dctx=null,drawing=false,lx=0,ly=0,strokes=[],curStroke=[];
+let penSize=3,penColor="#60a5fa";
+
+function rDraw(){
+  const f=S.df;
+  if(!f){go("formulas");return;}
+  let resHTML="";
+  if(S.dl2)resHTML=`<div class="draw-result dr-loading">🤖 KI prüft deine Zeichnung...</div>`;
+  else if(S.dr){
+    const ok=S.dr.startsWith("RICHTIG");
+    resHTML=`<div class="draw-result ${ok?"dr-correct":"dr-wrong"}">${esc(S.dr)}</div>`;
+  }
+  root.innerHTML=`
+    <div class="draw-page">
+      <div class="draw-header">
+        <button class="btn btn-g" style="flex:0;padding:10px 14px;font-size:11px" onclick="go('formulas')">← zurück</button>
+        <div class="draw-title">${esc(f.name)}</div>
+      </div>
+      <div class="draw-prompt">${esc(f.formula)}</div>
+      <div class="draw-desc">${esc(f.desc)}</div>
+      <div class="pen-size-wrap">
+        <label>Stärke</label>
+        <input type="range" min="1" max="12" value="${penSize}" oninput="setPen(this.value)" style="flex:1"/>
+        <div class="color-btns">
+          ${["#60a5fa","#f8f8f8","#4ade80","#fbbf24","#f87171"].map(c=>
+            `<div class="color-btn${penColor===c?" sel":""}" style="background:${c}" onclick="setColor('${c}')"></div>`
+          ).join("")}
+        </div>
+      </div>
+      <div class="draw-canvas-wrap"><canvas id="dc"></canvas></div>
+      ${resHTML}
+      <div class="draw-tools">
+        <button class="btn btn-rd" onclick="clrCanvas()" style="flex:1">✕ Löschen</button>
+        <button class="btn btn-g" onclick="undoS()" style="flex:1">↩ Undo</button>
+        <button class="btn btn-p" onclick="subDraw()" style="flex:2">✓ Prüfen</button>
+      </div>
+    </div>`;
+  initCanvas();
+}
+
+function initCanvas(){
+  const canvas=document.getElementById("dc");if(!canvas)return;
+  const wrap=canvas.parentElement;
+  canvas.width=wrap.offsetWidth||340;canvas.height=wrap.offsetHeight||260;
+  dctx=canvas.getContext("2d");
+  dctx.lineCap="round";dctx.lineJoin="round";
+  strokes=[];curStroke=[];
+  function pos(e){
+    const r=canvas.getBoundingClientRect(),p=e.touches?e.touches[0]:e;
+    return{x:(p.clientX-r.left)*(canvas.width/r.width),y:(p.clientY-r.top)*(canvas.height/r.height)};
+  }
+  function start(e){e.preventDefault();drawing=true;const p=pos(e);lx=p.x;ly=p.y;curStroke=[[p.x,p.y,penSize,penColor]];}
+  function move(e){
+    if(!drawing)return;e.preventDefault();
+    const p=pos(e);
+    dctx.strokeStyle=penColor;dctx.lineWidth=penSize;
+    dctx.beginPath();dctx.moveTo(lx,ly);dctx.lineTo(p.x,p.y);dctx.stroke();
+    lx=p.x;ly=p.y;curStroke.push([p.x,p.y,penSize,penColor]);
+  }
+  function end(){if(!drawing)return;drawing=false;if(curStroke.length>1)strokes.push([...curStroke]);curStroke=[];}
+  canvas.addEventListener("mousedown",start);canvas.addEventListener("mousemove",move);canvas.addEventListener("mouseup",end);
+  canvas.addEventListener("touchstart",start,{passive:false});canvas.addEventListener("touchmove",move,{passive:false});canvas.addEventListener("touchend",end);
+}
+
+function redrawAll(){
+  if(!dctx)return;
+  dctx.clearRect(0,0,dctx.canvas.width,dctx.canvas.height);
+  strokes.forEach(s=>{
+    if(s.length<2)return;
+    dctx.beginPath();dctx.moveTo(s[0][0],s[0][1]);
+    s.slice(1).forEach(([x,y,sz,col])=>{dctx.strokeStyle=col;dctx.lineWidth=sz;dctx.lineTo(x,y);dctx.stroke();dctx.beginPath();dctx.moveTo(x,y);});
+  });
+}
+
+window.setPen=function(v){penSize=+v;};
+window.setColor=function(c){penColor=c;const bs=document.querySelectorAll(".color-btn");bs.forEach(b=>b.classList.remove("sel"));document.querySelectorAll(".color-btn").forEach(b=>{if(b.style.background===c||b.style.background.replace(/\s/g,"")==c)b.classList.add("sel");});};
+window.clrCanvas=function(){strokes=[];if(dctx)dctx.clearRect(0,0,dctx.canvas.width,dctx.canvas.height);ss2({dr:null,dl2:false});};
+window.undoS=function(){strokes.pop();redrawAll();ss2({dr:null,dl2:false});};
+window.subDraw=function(){
+  const canvas=document.getElementById("dc");
+  if(!canvas||strokes.length===0){alert("Bitte erst etwas zeichnen!");return;}
+  checkDraw(S.df,canvas.toDataURL("image/png").split(",")[1]);
+};
+
+// ================================================================
+// ACTIONS
+// ================================================================
+window.go=function(tab){ss2({tab,dr:null,dl2:false});};
+window.startQ=function(){ss2({tab:"quiz",qi:0,qp:"question",res:[],ait:"",ail:false});};
+window.sfSearch=function(v){ss2({fs:v});};
+window.openDraw=function(f){ss2({tab:"draw",df:f,dr:null,dl2:false});};
+window.qHint=function(){ss2({qp:"hint"});};
+window.qAns=function(){ss2({qp:"answer"});};
+window.qRes=function(knew){
+  S.res.push(knew?"k":"d");S.qp="feedback";S.ait="";S.ail=true;
+  render();quizAI(DAILY[S.qi],knew);
+};
+window.qNext=function(){
+  if(S.qi+1>=DAILY.length){ustreak();mdone();ss2({tab:"done",qp:"question"});}
+  else ss2({qi:S.qi+1,qp:"question",ait:"",ail:false});
+};
+
+// ================================================================
+// PWA
+// ================================================================
+const mf={name:"DS Quiz",short_name:"DS Quiz",start_url:"/",display:"standalone",
+  background_color:"#0d0d14",theme_color:"#0d0d14",orientation:"portrait",
+  icons:[{src:"data:image/svg+xml,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%230d0d14'/><text x='256' y='355' font-size='300' text-anchor='middle' fill='%2360a5fa'>∑</text></svg>"),sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]};
+document.getElementById("mflink").href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:"application/json"}));
+if("serviceWorker" in navigator){
+  const sw=`const C="dsq3";self.addEventListener("install",e=>e.waitUntil(caches.open(C).then(c=>c.addAll(["/"]))));self.addEventListener("fetch",e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"}))).catch(()=>{});
+}
+
+render();
+</script>
+</body>
+</html>
